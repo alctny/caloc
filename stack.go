@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -54,7 +55,7 @@ func (e *ExprStack) Top() string {
 // 栈反转
 func (e *ExprStack) Reverse() {
 	len := e.top
-	for i := 0; i < len/2; i++ {
+	for i := 0; i <= len/2; i++ {
 		e.data[i], e.data[len-i] = e.data[len-i], e.data[i]
 	}
 }
@@ -80,11 +81,11 @@ func (e *ExprStack) ToRPN() {
 				result.Push(operator.Pop())
 			}
 			operator.Pop()
-		case "+", "-", "*", "/", "^":
-			if OperatorPriority[str] > OperatorPriority[operator.Top()] {
+		case "+", "-", "*", "/", "^", "%", "s", "c", "t":
+			if OperationPriority[str] > OperationPriority[operator.Top()] {
 				operator.Push(str)
 			} else {
-				for OperatorPriority[str] <= OperatorPriority[operator.Top()] {
+				for OperationPriority[str] <= OperationPriority[operator.Top()] {
 					result.Push(operator.Pop())
 				}
 				operator.Push(str)
@@ -103,6 +104,18 @@ func (e *ExprStack) ToRPN() {
 
 // 计算逆波兰表达式
 func (e *ExprStack) Expr() float64 {
+	parserFloat := func(s string) float64 {
+		switch s {
+		case "e":
+			return math.E
+		case "p":
+			return math.Pi
+		default:
+			r, _ := strconv.ParseFloat(s, 64)
+			return r
+		}
+	}
+
 	tmp := NewExprStack()
 	e.ToRPN()
 	for !e.Empty() {
@@ -111,9 +124,16 @@ func (e *ExprStack) Expr() float64 {
 		case "+", "-", "*", "/", "^", "%":
 			astr := tmp.Pop()
 			bstr := tmp.Pop()
+			a := parserFloat(astr)
+			b := parserFloat(bstr)
+			r := OperationAction[str](b, a)
+			tmp.Push(fmt.Sprintf("%f", r))
+
+		case "s", "c", "t":
+			// TODO 三角函数操作符在操作数之前
+			astr := tmp.Pop()
 			a, _ := strconv.ParseFloat(astr, 64)
-			b, _ := strconv.ParseFloat(bstr, 64)
-			r := OperatorsAction[str](b, a)
+			r := OperationAction[str](a)
 			tmp.Push(fmt.Sprintf("%f", r))
 		default:
 			tmp.Push(str)

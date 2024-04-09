@@ -4,13 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
 
 func expr(s string) (float64, error) {
-	s = strings.ReplaceAll(s, " ", "")
-	s = strings.ReplaceAll(s, "\n", "")
-
 	expr, err := Str2ExprArr(s)
 	if err != nil {
 		return 0, fmt.Errorf("表达式解析失败: %s", err)
@@ -20,7 +16,7 @@ func expr(s string) (float64, error) {
 	return es.Expr(), nil
 }
 
-func main() {
+func run() {
 	if len(os.Args) < 2 {
 		input := bufio.NewReader(os.Stdin)
 		for {
@@ -30,6 +26,7 @@ func main() {
 				fmt.Fprintln(os.Stderr, "读取输入失败: ", err)
 				os.Exit(1)
 			}
+
 			result, err := expr(string(line))
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "error: ", err)
@@ -45,4 +42,8 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println(rseult)
+}
+
+func main() {
+	run()
 }
